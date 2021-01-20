@@ -30,15 +30,33 @@ class DagTest extends TestCase
     {
         $dag = new Dag();
         $chan = new Channel(1);
-        $a = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('A'); });
-        $b = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('B'); });
-        $c = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('C'); });
-        $d = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('D'); });
-        $e = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('E'); });
-        $f = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('F'); });
-        $g = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('G'); });
-        $h = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('H'); });
-        $i = \Hyperf\Dag\Vertex::make(function () use ($chan) {$chan->push('I'); });
+        $a = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('A');
+        });
+        $b = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('B');
+        });
+        $c = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('C');
+        });
+        $d = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('D');
+        });
+        $e = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('E');
+        });
+        $f = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('F');
+        });
+        $g = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('G');
+        });
+        $h = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('H');
+        });
+        $i = \Hyperf\Dag\Vertex::make(function () use ($chan) {
+            $chan->push('I');
+        });
         $dag->addVertex($a)
             ->addVertex($b)
             ->addVertex($c)
@@ -178,9 +196,12 @@ class DagTest extends TestCase
 
     public function testBreathFirstSearch()
     {
-        $a = Vertex::make(function () {}, 'a');
-        $b = Vertex::make(function () {}, 'b');
-        $c = Vertex::make(function () {}, 'c');
+        $a = Vertex::make(function () {
+        }, 'a');
+        $b = Vertex::make(function () {
+        }, 'b');
+        $c = Vertex::make(function () {
+        }, 'c');
         $dag = new Dag();
         $dag->addVertex($a)
             ->addVertex($b)
@@ -193,9 +214,12 @@ class DagTest extends TestCase
         $this->assertEquals('b', $result[1][0]->key);
         $this->assertEquals('c', $result[2][0]->key);
 
-        $a = Vertex::make(function () {}, 'a');
-        $b = Vertex::make(function () {}, 'b');
-        $c = Vertex::make(function () {}, 'c');
+        $a = Vertex::make(function () {
+        }, 'a');
+        $b = Vertex::make(function () {
+        }, 'b');
+        $c = Vertex::make(function () {
+        }, 'c');
         $dag = new Dag();
         $dag->addVertex($a)
             ->addVertex($b)
@@ -206,9 +230,12 @@ class DagTest extends TestCase
         $this->assertEquals('b', $result[0][1]->key);
         $this->assertEquals('c', $result[0][2]->key);
 
-        $a = Vertex::make(function () {}, 'a');
-        $b = Vertex::make(function () {}, 'b');
-        $c = Vertex::make(function () {}, 'c');
+        $a = Vertex::make(function () {
+        }, 'a');
+        $b = Vertex::make(function () {
+        }, 'b');
+        $c = Vertex::make(function () {
+        }, 'c');
         $dag = new Dag();
         $dag->addVertex($a)
             ->addVertex($b)
@@ -220,9 +247,12 @@ class DagTest extends TestCase
         $this->assertEquals('c', $result[1][0]->key);
         $this->assertEquals('b', $result[1][1]->key);
 
-        $a = Vertex::make(function () {}, 'a');
-        $b = Vertex::make(function () {}, 'b');
-        $c = Vertex::make(function () {}, 'c');
+        $a = Vertex::make(function () {
+        }, 'a');
+        $b = Vertex::make(function () {
+        }, 'b');
+        $c = Vertex::make(function () {
+        }, 'c');
         $dag = new Dag();
         $dag->addVertex($a)
             ->addVertex($b)
@@ -234,9 +264,12 @@ class DagTest extends TestCase
         $this->assertEquals('b', $result[0][1]->key);
         $this->assertEquals('c', $result[1][0]->key);
 
-        $a = Vertex::make(function () {}, 'a');
-        $b = Vertex::make(function () {}, 'b');
-        $c = Vertex::make(function () {}, 'c');
+        $a = Vertex::make(function () {
+        }, 'a');
+        $b = Vertex::make(function () {
+        }, 'b');
+        $c = Vertex::make(function () {
+        }, 'c');
         $dag = new Dag();
         $dag->addVertex($a)
             ->addVertex($b)
@@ -250,9 +283,12 @@ class DagTest extends TestCase
         $this->assertEquals('c', $result[2][0]->key);
 
         $this->expectException(InvalidArgumentException::class);
-        $a = Vertex::make(function () {}, 'a');
-        $b = Vertex::make(function () {}, 'b');
-        $c = Vertex::make(function () {}, 'c');
+        $a = Vertex::make(function () {
+        }, 'a');
+        $b = Vertex::make(function () {
+        }, 'b');
+        $c = Vertex::make(function () {
+        }, 'c');
         $dag = new Dag();
         $dag->addVertex($a)
             ->addVertex($b)

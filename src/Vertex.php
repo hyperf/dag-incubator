@@ -11,8 +11,6 @@ declare(strict_types=1);
  */
 namespace Hyperf\Dag;
 
-use Hyperf\Dag\Exception\InvalidArgumentException;
-
 class Vertex
 {
     /**

@@ -1,6 +1,15 @@
 <?php
 
-require_once __DIR__ . "/../vendor/autoload.php";
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $dag = new Hyperf\Dag\Dag();
 $a = \Hyperf\Dag\Vertex::make(function () {
