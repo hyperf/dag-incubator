@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace HyperfTest\Cases;
 
 use Hyperf\Dag\Dag;
-use Hyperf\Dag\Exception\InvalidArgumentException;
 use Hyperf\Dag\Vertex;
 use Hyperf\Engine\Channel;
 use Hyperf\Utils\Coroutine;
@@ -107,6 +106,43 @@ class DagTest extends TestCase
         $this->assertEquals(2, $result[$b->key]);
     }
 
+    public function testRunWithRace()
+    {
+        $fastChan = new Channel(1);
+        $slowChan = new Channel(2);
+        $a = Vertex::make(function () use ($fastChan) {
+            $fastChan->push(0);
+        });
+        $b = Vertex::make(function () use ($fastChan) {
+            $fastChan->push(1);
+        });
+        $c = Vertex::make(function () use ($fastChan) {
+            $fastChan->push(2);
+        });
+        $d = Vertex::make(function () use ($slowChan) {
+            $slowChan->push(3);
+        });
+        $dag = new Dag();
+        $dag->addVertex($a)
+            ->addVertex($b)
+            ->addVertex($c)
+            ->addVertex($d)
+            ->addEdge($a, $b)
+            ->addEdge($b, $c)
+            ->addEdge($a, $d);
+        Coroutine::create(function () use ($dag) {
+            $dag->run();
+        });
+        $data = $fastChan->pop();
+        $this->assertEquals(0, $data);
+        $data = $fastChan->pop();
+        $this->assertEquals(1, $data);
+        $data = $fastChan->pop();
+        $this->assertEquals(2, $data);
+        $data = $slowChan->pop();
+        $this->assertEquals(3, $data);
+    }
+
     public function testRun()
     {
         $chan = new Channel(1);
@@ -192,118 +228,5 @@ class DagTest extends TestCase
         $this->assertEquals(1, $data);
         $data = $chan->pop();
         $this->assertEquals(0, $data);
-    }
-
-    public function testBreathFirstSearch()
-    {
-        $a = Vertex::make(function () {
-        }, 'a');
-        $b = Vertex::make(function () {
-        }, 'b');
-        $c = Vertex::make(function () {
-        }, 'c');
-        $dag = new Dag();
-        $dag->addVertex($a)
-            ->addVertex($b)
-            ->addVertex($c)
-            ->addEdge($a, $b)
-            ->addEdge($b, $c);
-        $result = $this->breathFirstSearch($dag);
-        $this->assertCount(3, $result);
-        $this->assertEquals('a', $result[0][0]->key);
-        $this->assertEquals('b', $result[1][0]->key);
-        $this->assertEquals('c', $result[2][0]->key);
-
-        $a = Vertex::make(function () {
-        }, 'a');
-        $b = Vertex::make(function () {
-        }, 'b');
-        $c = Vertex::make(function () {
-        }, 'c');
-        $dag = new Dag();
-        $dag->addVertex($a)
-            ->addVertex($b)
-            ->addVertex($c);
-        $result = $this->breathFirstSearch($dag);
-        $this->assertCount(1, $result);
-        $this->assertEquals('a', $result[0][0]->key);
-        $this->assertEquals('b', $result[0][1]->key);
-        $this->assertEquals('c', $result[0][2]->key);
-
-        $a = Vertex::make(function () {
-        }, 'a');
-        $b = Vertex::make(function () {
-        }, 'b');
-        $c = Vertex::make(function () {
-        }, 'c');
-        $dag = new Dag();
-        $dag->addVertex($a)
-            ->addVertex($b)
-            ->addVertex($c)
-            ->addEdge($a, $c)
-            ->addEdge($a, $b);
-        $result = $this->breathFirstSearch($dag);
-        $this->assertEquals('a', $result[0][0]->key);
-        $this->assertEquals('c', $result[1][0]->key);
-        $this->assertEquals('b', $result[1][1]->key);
-
-        $a = Vertex::make(function () {
-        }, 'a');
-        $b = Vertex::make(function () {
-        }, 'b');
-        $c = Vertex::make(function () {
-        }, 'c');
-        $dag = new Dag();
-        $dag->addVertex($a)
-            ->addVertex($b)
-            ->addVertex($c)
-            ->addEdge($a, $c)
-            ->addEdge($b, $c);
-        $result = $this->breathFirstSearch($dag);
-        $this->assertEquals('a', $result[0][0]->key);
-        $this->assertEquals('b', $result[0][1]->key);
-        $this->assertEquals('c', $result[1][0]->key);
-
-        $a = Vertex::make(function () {
-        }, 'a');
-        $b = Vertex::make(function () {
-        }, 'b');
-        $c = Vertex::make(function () {
-        }, 'c');
-        $dag = new Dag();
-        $dag->addVertex($a)
-            ->addVertex($b)
-            ->addVertex($c)
-            ->addEdge($a, $c)
-            ->addEdge($a, $b)
-            ->addEdge($b, $c);
-        $result = $this->breathFirstSearch($dag);
-        $this->assertEquals('a', $result[0][0]->key);
-        $this->assertEquals('b', $result[1][0]->key);
-        $this->assertEquals('c', $result[2][0]->key);
-
-        $this->expectException(InvalidArgumentException::class);
-        $a = Vertex::make(function () {
-        }, 'a');
-        $b = Vertex::make(function () {
-        }, 'b');
-        $c = Vertex::make(function () {
-        }, 'c');
-        $dag = new Dag();
-        $dag->addVertex($a)
-            ->addVertex($b)
-            ->addVertex($c)
-            ->addEdge($a, $b)
-            ->addEdge($b, $c)
-            ->addEdge($c, $a);
-        $this->breathFirstSearch($dag);
-    }
-
-    private function breathFirstSearch($dag): array
-    {
-        $ref = new \ReflectionClass($dag);
-        $method = $ref->getMethod('breathFirstSearchLayer');
-        $method->setAccessible(true);
-        return $method->invoke($dag);
     }
 }

@@ -12,30 +12,41 @@ declare(strict_types=1);
 namespace Hyperf\Dag;
 
 use Hyperf\Dag\Exception\InvalidArgumentException;
+use Hyperf\Engine\Channel;
+use Hyperf\Utils\Coroutine;
+use Hyperf\Utils\Coroutine\Concurrent;
 
 class Dag implements Runner
 {
     /**
      * @var array<Vertex>
      */
-    protected $vertexes;
+    protected $vertexes = [];
 
     /**
      * @var int
      */
-    protected $concurrency;
+    protected $concurrency = 100;
 
-    public function __construct(int $concurrency = 0)
-    {
-        $this->concurrency = $concurrency;
-    }
-
+    /**
+     * Add a vertex to the dag.
+     * It doesn't make sense to add a vertex with the same key more than once.
+     * If so they are simply ignored.
+     */
     public function addVertex(Vertex $vertex): self
     {
+        foreach ($this->vertexes as $added) {
+            if ($added->key == $vertex->key) {
+                return $this;
+            }
+        }
         $this->vertexes[] = $vertex;
         return $this;
     }
 
+    /**
+     * Add an edge to the dag.
+     */
     public function addEdge(Vertex $from, Vertex $to): self
     {
         $from->children[] = $to;
@@ -43,60 +54,73 @@ class Dag implements Runner
         return $this;
     }
 
+    /**
+     * Run the DAG.
+     */
     public function run(): array
     {
-        $all = $this->breathFirstSearchLayer();
-        $results = [];
+        $queue = new Channel(1);
+        Coroutine::create(function () use ($queue) {
+            $this->buildInitialQueue($queue);
+        });
 
-        foreach ($all as $layer) {
-            $callables = [];
-            foreach ($layer as $vertex) {
-                $callables[$vertex->key] = function () use ($vertex, $results) {
-                    return call($vertex->value, [$results]);
-                };
+        $total = count($this->vertexes);
+        $visited = [];
+        $results = [];
+        $concurrent = new Concurrent($this->concurrency);
+
+        while (count($visited) < $total) {
+            $element = $queue->pop();
+            if (isset($visited[$element->key])) {
+                continue;
             }
-            $results = array_merge($results, \parallel($callables, $this->concurrency));
+            // this channel will be closed after the completion of the corresponding task.
+            $visited[$element->key] = new Channel();
+            $concurrent->create(function () use ($queue, $visited, $element, &$results) {
+                $results[$element->key] = call($element->value, [$results]);
+                $visited[$element->key]->close();
+                Coroutine::create(function () use ($element, $queue, $visited) {
+                    $this->scheduleChildren($element, $queue, $visited);
+                });
+            });
+        }
+        // wait for all pending tasks to resolve
+        foreach ($visited as $element) {
+            $element->pop();
         }
         return $results;
     }
 
-    /**
-     * @return array<array<Vertex>>
-     */
-    private function breathFirstSearchLayer(): array
+    public function getConcurrency(): int
     {
-        $queue = $this->buildInitialQueue();
-        $all = [];
-        $visited = [];
-
-        while (! $queue->isEmpty()) {
-            $length = $queue->count();
-            $tmp = [];
-            for ($i = 0; $i < $length; ++$i) {
-                $element = $queue->dequeue();
-                if (isset($visited[$element->key])) {
-                    continue;
-                }
-                $visited[$element->key] = true;
-                $tmp[] = $element;
-                foreach ($element->children as $child) {
-                    foreach ($child->parents as $parent) {
-                        if ($parent == $element) {
-                            continue;
-                        }
-                        if (! isset($visited[$parent->key])) {
-                            continue 2;
-                        }
-                    }
-                    $queue->enqueue($child);
-                }
-            }
-            $all[] = $tmp;
-        }
-        return $all;
+        return $this->concurrency;
     }
 
-    private function buildInitialQueue(): \SplQueue
+    public function setConcurrency(int $concurrency): self
+    {
+        $this->concurrency = $concurrency;
+        return $this;
+    }
+
+    private function scheduleChildren(Vertex $element, Channel $queue, array $visited): void
+    {
+        foreach ($element->children as $child) {
+            // Only schedule child if all parents but this one is complete
+            foreach ($child->parents as $parent) {
+                if ($parent->key == $element->key) {
+                    continue;
+                }
+                if (! isset($visited[$parent->key])) {
+                    continue 2;
+                }
+                // Parent might be running. Wait until completion.
+                $visited[$parent->key]->pop();
+            }
+            $queue->push($child);
+        }
+    }
+
+    private function buildInitialQueue(Channel $queue): void
     {
         $roots = [];
         /** @var Vertex $vertex */
@@ -110,10 +134,8 @@ class Dag implements Runner
             throw new InvalidArgumentException('no roots can be found in dag');
         }
 
-        $queue = new \SplQueue();
         foreach ($roots as $root) {
-            $queue->enqueue($root);
+            $queue->push($root);
         }
-        return $queue;
     }
 }
