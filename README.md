@@ -20,7 +20,7 @@
 
 ```php
 <?php
-$dag = new Hyperf\Dag\Dag();
+$dag = new \Hyperf\Dag\Dag();
 $a = \Hyperf\Dag\Vertex::make(function() {sleep(1); echo "A\n";});
 $b = \Hyperf\Dag\Vertex::make(function() {sleep(1); echo "B\n";});
 $c = \Hyperf\Dag\Vertex::make(function() {sleep(1); echo "C\n";});
@@ -61,27 +61,28 @@ $dag->run();
 输出：
 
 ```php
-A
 // 1s 后
+A
+// 2s 后
 D
 C
 B
-// 2s 后
+// 3s 后
 G
 F
 E
 H
-// 3s 后
+// 4s 后
 I
 ```
 
 ## 获取结果
 
-每一个顶点可以接收一个数组参数，数组中包含所有前置依赖的结果。
+每一个任务可以接收一个数组参数，数组中包含所有前置依赖的结果。`DAG` 执行完毕后，也会返回一个同样结构的数组，包含每一步的执行结果。
 
 ```php
 <?php
-$dag = new Hyperf\Dag\Dag();
+$dag = new \Hyperf\Dag\Dag();
 $a = \Hyperf\Dag\Vertex::make(function() {return 1;});
 $b = \Hyperf\Dag\Vertex::make(function($results) use ($a) {
     return $results[$a->key] + 1;
@@ -96,8 +97,8 @@ assert($results[$b->key] === 2);
 在上述文档中，我们使用了闭包来定义一个任务。格式如下。
 
 ```php
-// Vertex::make 的第二个参数为可选参数，作为 vertex 的key，也就是结果数组的键值。
-\Hyperf\Dag\Vertex::make(function() {}, "greeting");
+// Vertex::make 的第二个参数为可选参数，作为 vertex 的 key，也就是结果数组的键值。
+\Hyperf\Dag\Vertex::make(function() { return 'hello'; }, "greeting");
 ```
 
 除了使用闭包函数定义任务外，还可以使用实现了 `\Hyperf\Dag\Runner` 接口的类来定义，并通过 `Vertex::of` 将其转化为一个顶点。
@@ -105,7 +106,7 @@ assert($results[$b->key] === 2);
 ```php
 class MyJob implements \Hyperf\Dag\Runner {
     public function run($results = []) {
-        return 'hello world'
+        return 'hello';
     }
 }
 
