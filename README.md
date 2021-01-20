@@ -87,8 +87,8 @@ $b = \Hyperf\Dag\Vertex::make(function($results) use ($a) {
     return $results[$a->key] + 1;
 });
 $results = $dag->addVertex($a)->addVertex($b)->addEdge($a, $b)->run();
-assert($result[$a->key] == 1);
-assert($result[$b->key] == 2);
+assert($results[$a->key] === 1);
+assert($results[$b->key] === 2);
 ```
 
 ## 定义一个任务
