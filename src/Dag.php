@@ -45,7 +45,7 @@ class Dag implements Runner
     }
 
     /**
-     * Add an edge to the dag.
+     * Add an edge to the DAG.
      */
     public function addEdge(Vertex $from, Vertex $to): self
     {
