@@ -106,8 +106,8 @@ class DagTest extends TestCase
         $this->assertEquals(2, $result['b']);
 
         $parent = new Dag();
-        $results = $parent->addVertex(Vertex::of($dag, "nest"))->run();
-        $this->assertEquals(['a' => 1, 'b' => 2], $results["nest"]);
+        $results = $parent->addVertex(Vertex::of($dag, 'nest'))->run();
+        $this->assertEquals(['a' => 1, 'b' => 2], $results['nest']);
     }
 
     public function testRunWithRace()

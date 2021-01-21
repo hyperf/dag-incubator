@@ -52,7 +52,7 @@ class Dag implements Runner
     /**
      * Run the DAG.
      * @param array $args while using the nested dag, $args contains results from the parent dag.
-     * in other cases, args can be used to modify dag behavior at run time.
+     *                    in other cases, args can be used to modify dag behavior at run time.
      */
     public function run(array $args = []): array
     {
@@ -76,6 +76,9 @@ class Dag implements Runner
             $concurrent->create(function () use ($queue, $visited, $element, &$results) {
                 $results[$element->key] = call($element->value, [$results]);
                 $visited[$element->key]->close();
+                if (empty($element->children)) {
+                    return;
+                }
                 Coroutine::create(function () use ($element, $queue, $visited) {
                     $this->scheduleChildren($element, $queue, $visited);
                 });
