@@ -115,7 +115,7 @@ class MyJob implements \Hyperf\Dag\Runner {
 \Hyperf\Dag\Vertex::of(new MyJob(), "greeting");
 ```
 
-`DAG` 本身也实现了 `\Hyperf\Dag\Runner` 接口，所以可以嵌套使用。
+`\Hyperf\Dag\DAG` 本身也实现了 `\Hyperf\Dag\Runner` 接口，所以可以嵌套使用。
 
 ```php
 <?php
@@ -134,4 +134,4 @@ $superDag->run();
 ```
 
 ## 控制并发数
- Dag 类提供了 `setConcurrency(int n)` 方法控制最大并发数。默认为10。
+`\Hyperf\Dag\DAG` 类提供了 `setConcurrency(int n)` 方法控制最大并发数。默认为10。
