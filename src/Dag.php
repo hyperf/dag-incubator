@@ -26,7 +26,7 @@ class Dag implements Runner
     /**
      * @var int
      */
-    protected $concurrency = 100;
+    protected $concurrency = 10;
 
     /**
      * Add a vertex to the dag.
