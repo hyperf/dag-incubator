@@ -19,7 +19,7 @@ use Hyperf\Utils\Coroutine\Concurrent;
 class Dag implements Runner
 {
     /**
-     * @var array<Vertex>
+     * @var array<string,Vertex>
      */
     protected $vertexes = [];
 
@@ -35,12 +35,7 @@ class Dag implements Runner
      */
     public function addVertex(Vertex $vertex): self
     {
-        foreach ($this->vertexes as $added) {
-            if ($added->key == $vertex->key) {
-                return $this;
-            }
-        }
-        $this->vertexes[] = $vertex;
+        $this->vertexes[$vertex->key] = $vertex;
         return $this;
     }
 
