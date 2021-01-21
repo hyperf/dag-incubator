@@ -95,15 +95,19 @@ class DagTest extends TestCase
     {
         $a = Vertex::make(function () {
             return 1;
-        });
+        }, 'a');
         $b = Vertex::make(function ($results) use ($a) {
             return $results[$a->key] + 1;
-        });
+        }, 'b');
         $dag = new Dag();
         $dag->addVertex($a)->addVertex($b)->addEdge($a, $b);
         $result = $dag->run();
-        $this->assertEquals(1, $result[$a->key]);
-        $this->assertEquals(2, $result[$b->key]);
+        $this->assertEquals(1, $result['a']);
+        $this->assertEquals(2, $result['b']);
+
+        $parent = new Dag();
+        $results = $parent->addVertex(Vertex::of($dag, "nest"))->run();
+        $this->assertEquals(['a' => 1, 'b' => 2], $results["nest"]);
     }
 
     public function testRunWithRace()

@@ -51,8 +51,10 @@ class Dag implements Runner
 
     /**
      * Run the DAG.
+     * @param array $args while using the nested dag, $args contains results from the parent dag.
+     * in other cases, args can be used to modify dag behavior at run time.
      */
-    public function run(): array
+    public function run(array $args = []): array
     {
         $queue = new Channel(1);
         Coroutine::create(function () use ($queue) {
@@ -61,7 +63,7 @@ class Dag implements Runner
 
         $total = count($this->vertexes);
         $visited = [];
-        $results = [];
+        $results = $args;
         $concurrent = new Concurrent($this->concurrency);
 
         while (count($visited) < $total) {
