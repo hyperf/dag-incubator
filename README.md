@@ -115,7 +115,7 @@ class MyJob implements \Hyperf\Dag\Runner {
 \Hyperf\Dag\Vertex::of(new MyJob(), "greeting");
 ```
 
-`\Hyperf\Dag\DAG` 本身也实现了 `\Hyperf\Dag\Runner` 接口，所以可以嵌套使用。
+`\Hyperf\Dag\Dag` 本身也实现了 `\Hyperf\Dag\Runner` 接口，所以可以嵌套使用。
 
 ```php
 <?php
