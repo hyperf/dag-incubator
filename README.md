@@ -134,4 +134,4 @@ $superDag->run();
 ```
 
 ## 控制并发数
-`\Hyperf\Dag\DAG` 类提供了 `setConcurrency(int n)` 方法控制最大并发数。默认为10。
+`\Hyperf\Dag\Dag` 类提供了 `setConcurrency(int n)` 方法控制最大并发数。默认为10。
