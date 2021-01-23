@@ -1,5 +1,5 @@
 {
-    "name": "hyperf/dag",
+    "name": "hyperf/dag-incubator",
     "type": "library",
     "license": "MIT",
     "keywords": [
