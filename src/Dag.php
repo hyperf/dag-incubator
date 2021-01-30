@@ -68,13 +68,21 @@ class Dag implements Runner
 
         while (count($visited) < $total) {
             $element = $queue->pop();
+            if ($element instanceof \Throwable) {
+                throw $element;
+            }
             if (isset($visited[$element->key])) {
                 continue;
             }
             // this channel will be closed after the completion of the corresponding task.
             $visited[$element->key] = new Channel();
             $concurrent->create(function () use ($queue, $visited, $element, &$results) {
-                $results[$element->key] = call($element->value, [$results]);
+                try {
+                    $results[$element->key] = call($element->value, [$results]);
+                } catch (\Throwable $e) {
+                    $queue->push($e);
+                    throw $e;
+                }
                 $visited[$element->key]->close();
                 if (empty($element->children)) {
                     return;
