@@ -11,7 +11,6 @@ declare(strict_types=1);
  */
 namespace HyperfTest\Cases;
 
-use _HumbugBoxd1d863f2278d\Nette\Neon\Exception;
 use Hyperf\Dag\Dag;
 use Hyperf\Dag\Vertex;
 use Hyperf\Engine\Channel;
@@ -240,10 +239,10 @@ class DagTest extends TestCase
         $dag = new Dag();
         $chan = new Channel(1);
         $a = \Hyperf\Dag\Vertex::make(function () {
-            throw new \Exception("should abort dag");
+            throw new \Exception('should abort dag');
         });
         $b = \Hyperf\Dag\Vertex::make(function () {
-            $this->assertFalse(true, "should not reach here");
+            $this->assertFalse(true, 'should not reach here');
         });
         $c = \Hyperf\Dag\Vertex::make(function () {
             $this->assertTrue(true);
