@@ -1,4 +1,4 @@
-`hyperf/dag` 是一个轻量级有向无环图 (**D**irected **A**cyclic **G**raph) 任务编排库。
+`hyperf/dag-incubator` 是一个轻量级有向无环图 (**D**irected **A**cyclic **G**raph) 任务编排库。
 
 ## 场景
 
@@ -16,7 +16,7 @@
 
 假设我们有一系列任务，拓扑结构如上图所示，顶点代表任务，边缘代表依赖关系。(A完成后才能完成B、C、D，B完成后才能完成H、E、F...)
 
-通过 `hyperf/dag` 可以使用如下方式构建 `DAG` 并执行。
+通过 `hyperf/dag-incubator` 可以使用如下方式构建 `DAG` 并执行。
 
 ```php
 <?php
